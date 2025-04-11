@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>输入输出示例</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>输入输出示例</h1>
+        <form method="POST">
+            <div class="input-group">
+                <label for="input_text">请输入内容：</label>
+                <input type="text" id="input_text" name="input_text" required>
+            </div>
+            <button type="submit">提交</button>
+        </form>
+        <div class="output-group">
+            <label>输出结果：</label>
+            <div class="output-container">
+                <div class="output-box" id="outputText">{{ output }}</div>
+                <button class="copy-btn" onclick="copyOutput()">复制</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function copyOutput() {
+            const outputText = document.getElementById('outputText').textContent;
+            navigator.clipboard.writeText(outputText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                copyBtn.textContent = '已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = '复制';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html> 
