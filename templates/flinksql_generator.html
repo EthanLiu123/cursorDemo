@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlinkSQL生成器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="user-profile">
+            <img src="{{ url_for('static', filename='images/dahua.jpg') }}" alt="用户头像" class="avatar">
+            <div class="user-name">大华</div>
+            <div class="user-role">管理员</div>
+        </div>
+        <div class="nav-links">
+            <ul>
+                <li>
+                    <a href="{{ url_for('text_process') }}">
+                        <span class="icon">📝</span>
+                        <span class="title">文本处理</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('code_generator') }}">
+                        <span class="icon">🔢</span>
+                        <span class="title">分发代码生成器</span>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="{{ url_for('flinksql_generator') }}">
+                        <span class="icon">⚡</span>
+                        <span class="title">FlinkSQL生成</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span class="icon">⚙️</span>
+                        <span class="title">设置</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1>FlinkSQL生成器</h1>
+            <form method="POST">
+                <div class="options-row">
+                    <div class="input-group">
+                        <label for="env">开发环境：</label>
+                        <select id="env" name="env" required>
+                            <option value="test">测试环境</option>
+                            <option value="prod">生产环境</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="mode">跑批模式：</label>
+                        <select id="mode" name="mode" required>
+                            <option value="batch">离线SQL</option>
+                            <option value="stream">实时SQL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="options-row">
+                    <div class="input-group">
+                        <label for="source_type">Source类型：</label>
+                        <select id="source_type" name="source_type" required>
+                            <option value="mysql">MySQL</option>
+                            <option value="oracle">Oracle</option>
+                            <option value="paimon">Paimon</option>
+                            <option value="pgsql">PostgreSQL</option>
+                            <option value="doris">Doris</option>
+                            <option value="kafka">Kafka</option>
+                            <option value="tidb">TiDB</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="sink_type">Sink类型：</label>
+                        <select id="sink_type" name="sink_type" required>
+                            <option value="mysql">MySQL</option>
+                            <option value="oracle">Oracle</option>
+                            <option value="paimon">Paimon</option>
+                            <option value="pgsql">PostgreSQL</option>
+                            <option value="doris">Doris</option>
+                            <option value="kafka">Kafka</option>
+                            <option value="tidb">TiDB</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="source_ddl">Source DDL：</label>
+                    <textarea id="source_ddl" name="source_ddl" rows="10" required placeholder="请粘贴源表的DDL语句"></textarea>
+                </div>
+                <button type="submit">生成FlinkSQL</button>
+            </form>
+            <div class="output-group">
+                <label>生成的FlinkSQL：</label>
+                <div class="output-container">
+                    <div class="output-box" id="outputText">{{ output }}</div>
+                    <button class="copy-btn" onclick="copyOutput()">复制</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyOutput() {
+            const outputText = document.getElementById('outputText').textContent;
+            navigator.clipboard.writeText(outputText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                copyBtn.textContent = '已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = '复制';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html> 

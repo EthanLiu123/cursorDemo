@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>欢迎</title>
+    <title>文本处理</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -15,7 +15,7 @@
         </div>
         <div class="nav-links">
             <ul>
-                <li>
+                <li class="active">
                     <a href="{{ url_for('text_process') }}">
                         <span class="icon">📝</span>
                         <span class="title">文本处理</span>
@@ -45,18 +45,39 @@
 
     <div class="main-content">
         <div class="container">
-            <h1>欢迎使用工具箱</h1>
-            <div class="welcome-content">
-                <p>这是一个多功能工具箱，提供以下功能：</p>
-                <ul>
-                    <li>文本处理：支持文本大小写转换、反转等操作</li>
-                    <li>分发代码生成器：快速生成分发代码</li>
-                    <li>FlinkSQL生成：快速生成FlinkSQL代码</li>
-                    <li>更多功能正在开发中...</li>
-                </ul>
-                <p>请从左侧菜单选择您需要的功能。</p>
+            <h1>文本处理工具</h1>
+            <form method="POST">
+                <div class="input-group">
+                    <label for="text_input">请输入要处理的文本：</label>
+                    <textarea id="text_input" name="text_input" rows="5" required></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" name="action" value="uppercase">转换为大写</button>
+                    <button type="submit" name="action" value="lowercase">转换为小写</button>
+                    <button type="submit" name="action" value="reverse">反转文本</button>
+                </div>
+            </form>
+            <div class="output-group">
+                <label>处理结果：</label>
+                <div class="output-container">
+                    <div class="output-box" id="outputText">{{ output }}</div>
+                    <button class="copy-btn" onclick="copyOutput()">复制</button>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function copyOutput() {
+            const outputText = document.getElementById('outputText').textContent;
+            navigator.clipboard.writeText(outputText).then(() => {
+                const copyBtn = document.querySelector('.copy-btn');
+                copyBtn.textContent = '已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = '复制';
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html> 
