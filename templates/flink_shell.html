@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flink Shell</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/sql/sql.min.js"></script>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/dahua.jpg') }}" alt="Logo" class="logo-img">
+            <div class="logo-text">晨旭的工具包</div>
+        </div>
+        <div class="nav-links">
+            <ul>
+                <li class="active">
+                    <a href="/">
+                        <span class="icon">💻</span>
+                        <span>Flink Shell</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/code-generator">
+                        <span class="icon">📦</span>
+                        <span>分发代码生成器</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/flinksql-generator">
+                        <span class="icon">⚡</span>
+                        <span>FlinkSQL生成器</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="flink-shell">
+                <div class="shell-header">
+                    <div class="connection-info">
+                        <select id="env" name="env">
+                            <option value="test">测试环境</option>
+                            <option value="prod">生产环境</option>
+                        </select>
+                        <button id="connect-btn">连接</button>
+                        <span id="connection-status">未连接</span>
+                    </div>
+                </div>
+                <div class="shell-body">
+                    <div class="sql-editor">
+                        <textarea id="sql-input" name="sql-input"></textarea>
+                    </div>
+                    <div class="shell-controls">
+                        <button id="execute-btn">执行</button>
+                        <button id="format-btn">格式化</button>
+                        <button id="clear-btn">清空</button>
+                    </div>
+                    <div class="result-container">
+                        <div class="result-tabs">
+                            <button class="tab-btn active" data-tab="result">结果</button>
+                            <button class="tab-btn" data-tab="log">日志</button>
+                        </div>
+                        <div class="result-content">
+                            <div class="tab-pane active" id="result-pane">
+                                <div class="result-table">
+                                    <table>
+                                        <thead id="result-header"></thead>
+                                        <tbody id="result-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="log-pane">
+                                <div class="log-content" id="log-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化CodeMirror编辑器
+        const editor = CodeMirror.fromTextArea(document.getElementById('sql-input'), {
+            mode: 'text/x-sql',
+            theme: 'monokai',
+            lineNumbers: true,
+            indentWithTabs: true,
+            smartIndent: true,
+            lineWrapping: true,
+            matchBrackets: true,
+            autofocus: true,
+            extraKeys: {
+                "Ctrl-Enter": executeSQL,
+                "Ctrl-Space": "autocomplete"
+            }
+        });
+
+        // 连接状态
+        let isConnected = false;
+
+        // 连接按钮点击事件
+        document.getElementById('connect-btn').addEventListener('click', function() {
+            const env = document.getElementById('env').value;
+            const status = document.getElementById('connection-status');
+            
+            if (!isConnected) {
+                // 发送连接请求
+                fetch('/flink-connect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ env: env })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        isConnected = true;
+                        status.textContent = '已连接';
+                        status.style.color = 'green';
+                        this.textContent = '断开';
+                    } else {
+                        alert('连接失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('连接错误：' + error);
+                });
+            } else {
+                // 发送断开连接请求
+                fetch('/flink-disconnect', {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        isConnected = false;
+                        status.textContent = '未连接';
+                        status.style.color = 'red';
+                        this.textContent = '连接';
+                    }
+                });
+            }
+        });
+
+        // 执行SQL
+        function executeSQL() {
+            if (!isConnected) {
+                alert('请先连接到Flink环境');
+                return;
+            }
+
+            const sql = editor.getValue();
+            if (!sql.trim()) {
+                alert('请输入SQL语句');
+                return;
+            }
+
+            // 显示执行中的状态
+            const logContent = document.getElementById('log-content');
+            logContent.innerHTML += `[${new Date().toLocaleTimeString()}] 执行SQL: ${sql}\n`;
+
+            // 发送SQL执行请求
+            fetch('/flink-execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sql: sql })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 显示结果
+                    displayResult(data.result);
+                    logContent.innerHTML += `[${new Date().toLocaleTimeString()}] 执行成功\n`;
+                } else {
+                    logContent.innerHTML += `[${new Date().toLocaleTimeString()}] 执行失败: ${data.message}\n`;
+                }
+            })
+            .catch(error => {
+                logContent.innerHTML += `[${new Date().toLocaleTimeString()}] 执行错误: ${error}\n`;
+            });
+        }
+
+        // 显示查询结果
+        function displayResult(result) {
+            const header = document.getElementById('result-header');
+            const body = document.getElementById('result-body');
+            
+            // 清空现有内容
+            header.innerHTML = '';
+            body.innerHTML = '';
+            
+            if (result.length === 0) {
+                return;
+            }
+
+            // 创建表头
+            const tr = document.createElement('tr');
+            Object.keys(result[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                tr.appendChild(th);
+            });
+            header.appendChild(tr);
+
+            // 创建数据行
+            result.forEach(row => {
+                const tr = document.createElement('tr');
+                Object.values(row).forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                body.appendChild(tr);
+            });
+        }
+
+        // 格式化SQL
+        document.getElementById('format-btn').addEventListener('click', function() {
+            const sql = editor.getValue();
+            // 这里可以添加SQL格式化逻辑
+            editor.setValue(sql);
+        });
+
+        // 清空SQL
+        document.getElementById('clear-btn').addEventListener('click', function() {
+            editor.setValue('');
+        });
+
+        // 标签页切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(`${tab}-pane`).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html> 

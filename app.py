@@ -1,34 +1,20 @@
-from flask import Flask, render_template, request
-from utils import generate_flinksql
+from flask import Flask
+import os
+from blueprints.main import main_bp
+from blueprints.flink import flink_bp
+from blueprints.generator import generator_bp
 
 app = Flask(__name__)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# 注册蓝图
+app.register_blueprint(main_bp)
+app.register_blueprint(flink_bp)
+app.register_blueprint(generator_bp)
 
-@app.route('/text-process')
-def text_process():
-    return render_template('text_process.html')
-
-@app.route('/code-generator')
-def code_generator():
-    return render_template('code_generator.html')
-
-@app.route('/flinksql-generator', methods=['GET', 'POST'])
-def flinksql_generator():
-    output = ""
-    if request.method == 'POST':
-        env = request.form.get('env')
-        mode = request.form.get('mode')
-        source_type = request.form.get('source_type')
-        sink_type = request.form.get('sink_type')
-        source_ddl = request.form.get('source_ddl')
-        
-        # 生成FlinkSQL
-        output = generate_flinksql(env, mode, source_type, sink_type, source_ddl)
-    
-    return render_template('flinksql_generator.html', output=output)
+# 打印当前工作目录和模板目录
+print(f"Current working directory: {os.getcwd()}")
+print(f"Template directory: {os.path.join(os.getcwd(), 'templates')}")
+print(f"Static directory: {os.path.join(os.getcwd(), 'static')}")
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=True, host='0.0.0.0', port=5000) 

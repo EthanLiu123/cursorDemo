@@ -18,14 +18,25 @@ body {
 }
 
 .logo {
-    text-align: center;
-    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    padding: 20px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.logo h2 {
-    margin: 0;
-    font-size: 1.5rem;
+.logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #3498db;
+}
+
+.logo-text {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 .user-profile {
@@ -88,17 +99,23 @@ body {
 
 .main-content {
     margin-left: 250px;
-    padding: 20px;
+    padding: 0;
     width: calc(100% - 250px);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     background-color: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+    box-shadow: none;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 h1 {
@@ -190,6 +207,8 @@ button:hover {
     display: flex;
     gap: 10px;
     align-items: flex-start;
+    flex: 1;
+    position: relative;
 }
 
 .output-box {
@@ -200,12 +219,19 @@ button:hover {
     min-height: 50px;
     flex-grow: 1;
     white-space: pre-wrap;
+    height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding-right: 80px;
 }
 
 .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     width: auto;
     min-width: 80px;
     background-color: #2196F3;
+    z-index: 1;
 }
 
 .copy-btn:hover {
@@ -215,8 +241,8 @@ button:hover {
 .options-row {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
 .options-row .input-group {
@@ -236,4 +262,175 @@ button:hover {
     border: 1px solid #ddd;
     border-radius: 4px;
     background-color: white;
+}
+
+/* Flink Shell 样式 */
+.flink-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #1e1e1e;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.shell-header {
+    padding: 10px;
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #3d3d3d;
+}
+
+.connection-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.connection-info select {
+    padding: 5px;
+    border: 1px solid #3d3d3d;
+    background-color: #2d2d2d;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.connection-info button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.connection-info button:hover {
+    background-color: #45a049;
+}
+
+#connection-status {
+    color: #ff4444;
+    font-size: 0.9em;
+}
+
+.shell-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+}
+
+.sql-editor {
+    flex: 1;
+    min-height: 200px;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.CodeMirror {
+    height: 100%;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+}
+
+.shell-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.shell-controls button {
+    padding: 5px 10px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.shell-controls button:hover {
+    background-color: #1976D2;
+}
+
+.result-container {
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.result-tabs {
+    display: flex;
+    background-color: #2d2d2d;
+    border-bottom: 1px solid #3d3d3d;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+    border-bottom-color: #2196F3;
+    color: #2196F3;
+}
+
+.result-content {
+    flex: 1;
+    overflow: auto;
+    background-color: #1e1e1e;
+}
+
+.tab-pane {
+    display: none;
+    height: 100%;
+    padding: 10px;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.result-table {
+    width: 100%;
+    overflow: auto;
+}
+
+.result-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.result-table th,
+.result-table td {
+    padding: 8px;
+    border: 1px solid #3d3d3d;
+    text-align: left;
+}
+
+.result-table th {
+    background-color: #2d2d2d;
+    color: #fff;
+}
+
+.result-table td {
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+.log-content {
+    height: 100%;
+    overflow: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 14px;
+    color: #fff;
+    white-space: pre-wrap;
+    padding: 10px;
 } 

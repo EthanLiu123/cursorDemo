@@ -8,35 +8,28 @@
 </head>
 <body>
     <div class="sidebar">
-        <div class="user-profile">
-            <img src="{{ url_for('static', filename='images/dahua.jpg') }}" alt="用户头像" class="avatar">
-            <div class="user-name">大华</div>
-            <div class="user-role">管理员</div>
+        <div class="logo">
+            <img src="{{ url_for('static', filename='images/dahua.jpg') }}" alt="Logo" class="logo-img">
+            <div class="logo-text">晨旭的工具包</div>
         </div>
         <div class="nav-links">
             <ul>
-                <li>
-                    <a href="{{ url_for('text_process') }}">
-                        <span class="icon">📝</span>
-                        <span class="title">文本处理</span>
+                <li class="active">
+                    <a href="/">
+                        <span class="icon">💻</span>
+                        <span>Flink Shell</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('code_generator') }}">
-                        <span class="icon">🔢</span>
-                        <span class="title">分发代码生成器</span>
+                    <a href="/code-generator">
+                        <span class="icon">📦</span>
+                        <span>分发代码生成器</span>
                     </a>
                 </li>
                 <li>
-                    <a href="{{ url_for('flinksql_generator') }}">
+                    <a href="/flinksql-generator">
                         <span class="icon">⚡</span>
-                        <span class="title">FlinkSQL生成</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <span class="icon">⚙️</span>
-                        <span class="title">设置</span>
+                        <span>FlinkSQL生成器</span>
                     </a>
                 </li>
             </ul>
@@ -45,7 +38,6 @@
 
     <div class="main-content">
         <div class="container">
-            <h1>欢迎使用工具箱</h1>
             <div class="welcome-content">
                 <p>这是一个多功能工具箱，提供以下功能：</p>
                 <ul>
