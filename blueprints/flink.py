@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from pyflink.table import TableEnvironment, EnvironmentSettings
 from pyflink.datastream import StreamExecutionEnvironment
 import os
-from config import FLINK_CLUSTER_CONFIGS
+from config import FLINK_CLUSTER_CONFIG
 
 flink_bp = Blueprint('flink', __name__)
 
@@ -13,100 +13,93 @@ table_env = None
 @flink_bp.route('/flink-connect', methods=['POST'])
 def flink_connect():
     try:
-        data = request.get_json()
-        env = data.get('env', 'test')
-        
         global flink_env, table_env
         
-        # 获取集群配置
-        config = FLINK_CLUSTER_CONFIGS.get(env)
-        if not config:
-            return jsonify({"success": False, "message": f"未找到环境 {env} 的配置"})
-        
         # 设置环境变量
-        os.environ['JOB_MANAGER_RPC_ADDRESS'] = config['jobmanager'].split(':')[0]
-        os.environ['JOB_MANAGER_RPC_PORT'] = config['jobmanager'].split(':')[1]
+        os.environ['JOB_MANAGER_RPC_ADDRESS'] = FLINK_CLUSTER_CONFIG['jobmanager'].split(':')[0]
+        os.environ['JOB_MANAGER_RPC_PORT'] = FLINK_CLUSTER_CONFIG['jobmanager'].split(':')[1]
         
         # 创建Flink环境
         settings = EnvironmentSettings.in_streaming_mode()
         flink_env = StreamExecutionEnvironment.get_execution_environment()
         
         # 设置并行度
-        flink_env.set_parallelism(config['parallelism'])
+        flink_env.set_parallelism(FLINK_CLUSTER_CONFIG['parallelism'])
         
         # 设置内存配置
-        flink_env.get_config().set_taskmanager_memory(config['memory']['taskmanager'])
-        flink_env.get_config().set_jobmanager_memory(config['memory']['jobmanager'])
+        configuration = flink_env.get_config()
+        configuration.set("taskmanager.memory.process.size", FLINK_CLUSTER_CONFIG['memory']['taskmanager'])
+        configuration.set("jobmanager.memory.process.size", FLINK_CLUSTER_CONFIG['memory']['jobmanager'])
         
         # 创建Table环境
         table_env = TableEnvironment.create(settings)
         
         # 设置作业名称
-        table_env.get_config().get_configuration().set_string(
+        table_env.get_config().get_configuration().set(
             "pipeline.name", 
-            f"{env.capitalize()} Pipeline"
+            "Flink Pipeline"
         )
         
         # 设置REST API地址
-        table_env.get_config().get_configuration().set_string(
+        table_env.get_config().get_configuration().set(
             "rest.address",
-            config['rest_api'].split('//')[1].split(':')[0]
+            FLINK_CLUSTER_CONFIG['rest_api'].split('//')[1].split(':')[0]
         )
-        table_env.get_config().get_configuration().set_string(
+        table_env.get_config().get_configuration().set(
             "rest.port",
-            config['rest_api'].split(':')[-1]
+            FLINK_CLUSTER_CONFIG['rest_api'].split(':')[-1]
         )
         
         # 设置安全配置
-        if config['security']['enabled']:
-            if config['security']['username'] and config['security']['password']:
-                table_env.get_config().get_configuration().set_string(
+        if FLINK_CLUSTER_CONFIG['security']['enabled']:
+            if FLINK_CLUSTER_CONFIG['security']['username'] and FLINK_CLUSTER_CONFIG['security']['password']:
+                table_env.get_config().get_configuration().set(
                     "security.username",
-                    config['security']['username']
+                    FLINK_CLUSTER_CONFIG['security']['username']
                 )
-                table_env.get_config().get_configuration().set_string(
+                table_env.get_config().get_configuration().set(
                     "security.password",
-                    config['security']['password']
+                    FLINK_CLUSTER_CONFIG['security']['password']
                 )
             
-            if config['security']['kerberos']['enabled']:
-                table_env.get_config().get_configuration().set_string(
+            if FLINK_CLUSTER_CONFIG['security']['kerberos']['enabled']:
+                table_env.get_config().get_configuration().set(
                     "security.kerberos.login.keytab",
-                    config['security']['kerberos']['keytab']
+                    FLINK_CLUSTER_CONFIG['security']['kerberos']['keytab']
                 )
-                table_env.get_config().get_configuration().set_string(
+                table_env.get_config().get_configuration().set(
                     "security.kerberos.login.principal",
-                    config['security']['kerberos']['principal']
+                    FLINK_CLUSTER_CONFIG['security']['kerberos']['principal']
                 )
         
         # 设置高可用配置
-        if config['high_availability']['enabled']:
-            table_env.get_config().get_configuration().set_string(
+        if FLINK_CLUSTER_CONFIG['high_availability']['enabled']:
+            table_env.get_config().get_configuration().set(
                 "high-availability",
                 "zookeeper"
             )
-            table_env.get_config().get_configuration().set_string(
+            table_env.get_config().get_configuration().set(
                 "high-availability.zookeeper.quorum",
-                config['high_availability']['zookeeper_quorum']
+                FLINK_CLUSTER_CONFIG['high_availability']['zookeeper_quorum']
             )
-            table_env.get_config().get_configuration().set_string(
+            table_env.get_config().get_configuration().set(
                 "high-availability.zookeeper.path.root",
-                config['high_availability']['zookeeper_root']
+                FLINK_CLUSTER_CONFIG['high_availability']['zookeeper_root']
             )
         
         return jsonify({
             "success": True, 
             "message": "连接成功",
             "config": {
-                "jobmanager": config['jobmanager'],
-                "parallelism": config['parallelism'],
-                "memory": config['memory'],
+                "jobmanager": FLINK_CLUSTER_CONFIG['jobmanager'],
+                "parallelism": FLINK_CLUSTER_CONFIG['parallelism'],
+                "memory": FLINK_CLUSTER_CONFIG['memory'],
                 "security": {
-                    "enabled": config['security']['enabled'],
-                    "kerberos_enabled": config['security']['kerberos']['enabled']
+                    "enabled": FLINK_CLUSTER_CONFIG['security']['enabled'],
+                    "kerberos_enabled": FLINK_CLUSTER_CONFIG['security']['kerberos']['enabled']
                 },
                 "high_availability": {
-                    "enabled": config['high_availability']['enabled']
+                    "enabled": FLINK_CLUSTER_CONFIG['high_availability']['enabled']
                 }
             }
         })
@@ -172,14 +165,9 @@ def flink_execute():
 def get_flink_config():
     """获取Flink集群配置信息"""
     try:
-        env = request.args.get('env', 'test')
-        config = FLINK_CLUSTER_CONFIGS.get(env)
-        if not config:
-            return jsonify({"success": False, "message": f"未找到环境 {env} 的配置"})
-        
         return jsonify({
             "success": True,
-            "config": config
+            "config": FLINK_CLUSTER_CONFIG
         })
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}) 

@@ -1,52 +1,26 @@
 # Flink集群配置
-FLINK_CLUSTER_CONFIGS = {
-    'test': {
-        'jobmanager': 'hadoop105:8081',
-        'rest_api': 'http://hadoop105:8081',
-        'parallelism': 1,
-        'memory': {
-            'taskmanager': '1024m',
-            'jobmanager': '1024m'
-        },
-        'security': {
+FLINK_CLUSTER_CONFIG = {
+    'jobmanager': 'hadoop105:8081',
+    'rest_api': 'http://hadoop105:8081',
+    'parallelism': 1,
+    'memory': {
+        'taskmanager': '1024m',
+        'jobmanager': '1024m'
+    },
+    'security': {
+        'enabled': False,
+        'username': None,
+        'password': None,
+        'kerberos': {
             'enabled': False,
-            'username': None,
-            'password': None,
-            'kerberos': {
-                'enabled': False,
-                'keytab': None,
-                'principal': None
-            }
-        },
-        'high_availability': {
-            'enabled': False,
-            'zookeeper_quorum': None,
-            'zookeeper_root': None
+            'keytab': None,
+            'principal': None
         }
     },
-    'prod': {
-        'jobmanager': 'hadoop105:8081',
-        'rest_api': 'http://hadoop105:8081',
-        'parallelism': 4,
-        'memory': {
-            'taskmanager': '4096m',
-            'jobmanager': '2048m'
-        },
-        'security': {
-            'enabled': True,
-            'username': 'flink',
-            'password': 'flink123',
-            'kerberos': {
-                'enabled': False,
-                'keytab': None,
-                'principal': None
-            }
-        },
-        'high_availability': {
-            'enabled': True,
-            'zookeeper_quorum': 'zk1:2181,zk2:2181,zk3:2181',
-            'zookeeper_root': '/flink'
-        }
+    'high_availability': {
+        'enabled': False,
+        'zookeeper_quorum': None,
+        'zookeeper_root': None
     }
 }
 
